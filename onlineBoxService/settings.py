@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +27,7 @@ SECRET_KEY = "django-insecure-u)j)4pudhbn30&q925@8xmgzb1l8%+xi($o2y60yn$o#!+^84^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -43,13 +45,42 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 ROOT_URLCONF = "onlineBoxService.urls"
+
+
+# 跨域增加忽略
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = ('*')
+
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'VIEW',
+)
+
+CORS_ALLOW_HEADERS = (
+    'XMLHttpRequest',
+    'X_FILENAME',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+)
 
 TEMPLATES = [
     {
@@ -122,3 +153,52 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+DIR_OF_INI = ""
+
+if os.name == 'posix':  # Linux 或 macOS
+    DIR_OF_INI = '/usr/onlineBox/ini/'
+else:  # Windows
+    DIR_OF_INI = 'D:\\learn\\djangoLearn\\onlineBoxService\\ini\\'
+
+
+TEMPLATE_STR = template_str = """\
+[common]
+server_addr = {{serverAdd}}
+server_port = {{serverPort}}
+
+[tcp]
+type = tcp
+local_ip = {{localIp}}
+local_port = {{localPort}}
+remote_port = {{remotePort}}
+"""
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file_debug': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+        },
+        'file_info': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'info.log'),
+        },
+        'file_error': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'error.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file_debug', 'file_info', 'file_error'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
