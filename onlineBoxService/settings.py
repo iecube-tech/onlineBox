@@ -157,7 +157,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 DIR_OF_INI = ""
 
 if os.name == 'posix':  # Linux 或 macOS
-    DIR_OF_INI = '/usr/onlineBox/ini/'
+    DIR_OF_INI = '/iecube/onlineBox/ini/'
 else:  # Windows
     DIR_OF_INI = 'D:\\learn\\djangoLearn\\onlineBoxService\\ini\\'
 

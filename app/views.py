@@ -23,26 +23,35 @@ def curl(request):
 
 @require_POST
 def add_device(request):
-    post_data = request.POST.dict()
-    print(post_data)
-    # json_data = request.body
-    # print(json.loads(json_data))
-    back_msg = {'msg': 'success'}
-    deviceId = 2
-    frpServerIp = '47.108.137.115'
-    frpServerPort = 7000
-    localeIp = '192.168.1.10'
-    localePort = 5900
-    remotePort = 48000
-    template = Template(TEMPLATE_STR)
-    content = template.render(serverAdd=frpServerIp, serverPort=frpServerPort, localIp=localeIp, localPort=localePort,
-                              remotePort=remotePort)
-    with open(settings.DIR_OF_INI+str(deviceId)+".ini", "w") as file:
-        file.write(content)
-        file.close()
-    # 执行运行frpc
-    start_frpc(deviceId)
-    return JsonResponse(back_msg)
+    print(type(request.body.decode('utf-8')))
+    post_data = json.loads(request.body.decode('utf-8'))
+    print(request.body.decode('utf-8'))
+    print(type(post_data))
+    back_msg = {'msg': 'failed', 'data': 0}
+    try:
+        deviceId = post_data['id']
+        frpServerIp = post_data['frpServerIp']
+        frpServerPort = post_data['frpServerPort']
+        localeIp = post_data['localeIp']
+        localePort = post_data['localePort']
+        remotePort = post_data['remotePort']
+        template = Template(TEMPLATE_STR)
+        content = template.render(serverAdd=frpServerIp, serverPort=frpServerPort, localIp=localeIp, localPort=localePort,
+                                  remotePort=remotePort)
+        print(content)
+        with open(settings.DIR_OF_INI+str(deviceId)+".ini", "w") as file:
+            file.write(content)
+            file.close()
+        # 执行运行frpc
+        pid = start_frpc(deviceId)
+        if pid > 0:
+            back_msg['msg'] = 'success'
+            back_msg['data'] = pid
+        return JsonResponse(back_msg)
+    except Exception as e:
+        logging.error(e)
+    finally:
+        return JsonResponse(back_msg)
 
 
 def start_frpc(id):
@@ -52,6 +61,8 @@ def start_frpc(id):
     """
     command = ['/iecube/onlineBox/frp/start_frp.sh', str(id)]
     try:
+        if os.name != 'posix':
+            return 1
         # 执行Shell脚本并捕获输出
         output = subprocess.run(command, capture_output=True, text=True, check=True)
         # 返回Shell脚本的输出（PID）
