@@ -64,7 +64,7 @@ def add_device(request):
         return JsonResponse(back_msg.__dict__)
     except Exception as e:
         logging.error(e)
-        back_msg.strData = e.__str__()
+        back_msg.strData = str(e)
         return JsonResponse(back_msg.__dict__)
     finally:
         return JsonResponse(back_msg.__dict__)
@@ -85,7 +85,7 @@ def del_device(request):
         return JsonResponse(back_msg.__dict__)
     except Exception as e:
         logging.error(e)
-        back_msg.strData = e.__str__()
+        back_msg.strData = str(e)
         return JsonResponse(back_msg.__dict__)
     finally:
         return JsonResponse(back_msg.__dict__)
@@ -123,7 +123,7 @@ def start_device(request):
         return JsonResponse(back_msg.__dict__)
     except Exception as e:
         logging.error(e)
-        back_msg.strData = e.__str__()
+        back_msg.strData = str(e)
         return JsonResponse(back_msg.__dict__)
     finally:
         return JsonResponse(back_msg.__dict__)
@@ -149,7 +149,7 @@ def stop_device(request):
         return JsonResponse(back_msg.__dict__)
     except Exception as e:
         logging.error(e)
-        back_msg.strData = e.__str__()
+        back_msg.strData = str(e)
         return JsonResponse(back_msg.__dict__)
     finally:
         return JsonResponse(back_msg.__dict__)
@@ -185,9 +185,10 @@ def stop_frpc(pid):
         if os.name != 'posix':
             return 1
         command = ['bash', '/iecube/onlineBox/frp/stop_frp.sh', str(pid)]
-        output = subprocess.run(command, capture_output=True, text=True, check=True)
-        res = int(output.stdout.strip())
-        return res
+        process = subprocess.Popen(command, capture_output=True, text=True, check=True)
+        output, error = process.communicate()  # 获取标准输出和标准错误
+        exit_code = process.returncode  # 获取退出状态码
+        return exit_code
     except subprocess.CalledProcessError as e:
         logging.error("subprocess error: " + e.stdout)
         return 0

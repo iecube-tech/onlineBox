@@ -3,7 +3,7 @@
 # 检查参数是否传递
 if [ $# -ne 1 ]; then
     echo "Usage: $0 <pid>"
-    exit 1
+    exit 0
 fi
 
 # 获取传递的 PID
@@ -16,5 +16,5 @@ if ps -p $pid > /dev/null; then
     exit 1
 else
     # 不存在返回 0
-    exit 0
+    exit 1
 fi
