@@ -15,10 +15,20 @@ import os
 TEMPLATE_STR = settings.TEMPLATE_STR
 
 
+class BackMsg:
+    def __init__(self, res=0, device_id=0, p_id=0, id_list=[], ip_list=[], str_data=''):
+        self.res = res
+        self.deviceId = device_id
+        self.pId = p_id
+        self.idList = id_list
+        self.ipList = ip_list
+        self.strData = str_data
+
+
 @require_GET
 def curl(request):
-    back_msg = {'msg': 'success'}
-    return JsonResponse(back_msg)
+    back_msg = BackMsg(res=1)
+    return JsonResponse(back_msg.__dict__)
 
 
 @require_POST
@@ -27,16 +37,16 @@ def add_device(request):
     post_data = json.loads(request.body.decode('utf-8'))
     print(request.body.decode('utf-8'))
     print(type(post_data))
-    back_msg = {'msg': 'failed', 'data': 0}
+    back_msg = BackMsg()
     try:
         deviceId = post_data['id']
         frpServerIp = post_data['frpServerIp']
         frpServerPort = post_data['frpServerPort']
-        localeIp = post_data['localeIp']
-        localePort = post_data['localePort']
+        localIp = post_data['localIp']
+        localPort = post_data['localPort']
         remotePort = post_data['remotePort']
         template = Template(TEMPLATE_STR)
-        content = template.render(serverAdd=frpServerIp, serverPort=frpServerPort, localIp=localeIp, localPort=localePort,
+        content = template.render(serverAdd=frpServerIp, serverPort=frpServerPort, localIp=localIp, localPort=localPort,
                                   remotePort=remotePort)
         print(content)
         with open(settings.DIR_OF_INI+str(deviceId)+".ini", "w") as file:
@@ -45,13 +55,14 @@ def add_device(request):
         # 执行运行frpc
         pid = start_frpc(deviceId)
         if pid > 0:
-            back_msg['msg'] = 'success'
-            back_msg['data'] = pid
-        return JsonResponse(back_msg)
+            back_msg.res = 1
+            back_msg.deviceId = deviceId
+            back_msg.pId = pid
+        return JsonResponse(back_msg.__dict__)
     except Exception as e:
         logging.error(e)
     finally:
-        return JsonResponse(back_msg)
+        return JsonResponse(back_msg.__dict__)
 
 
 def start_frpc(id):
