@@ -167,7 +167,7 @@ TEMPLATE_STR = template_str = """\
 server_addr = {{serverAdd}}
 server_port = {{serverPort}}
 
-[tcp]
+[tcp{{id}}]
 type = tcp
 local_ip = {{localIp}}
 local_port = {{localPort}}

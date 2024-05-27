@@ -48,8 +48,8 @@ def add_device(request):
         localPort = post_data['localPort']
         remotePort = post_data['remotePort']
         template = Template(TEMPLATE_STR)
-        content = template.render(serverAdd=frpServerIp, serverPort=frpServerPort, localIp=localIp, localPort=localPort,
-                                  remotePort=remotePort)
+        content = template.render(serverAdd=frpServerIp, serverPort=frpServerPort, id=deviceId, localIp=localIp,
+                                  localPort=localPort, remotePort=remotePort)
         print(content)
         with open(settings.DIR_OF_INI+str(deviceId)+".ini", "w") as file:
             file.write(content)
@@ -117,7 +117,7 @@ def start_device(request):
             if new_pid > 0:
                 back_msg.res = 1
                 back_msg.deviceId = deviceId
-                back_msg.deviceId = 1
+                back_msg.deviceState = 1
                 back_msg.pid = new_pid
 
         return JsonResponse(back_msg.__dict__)
@@ -144,7 +144,7 @@ def stop_device(request):
                 back_msg.deviceState = 0
                 back_msg.pid = 0
             else:
-                back_msg.strData = 'onlineBox执行错误'
+                back_msg.strData = 'onlineBox未找到该设备进程'
 
         return JsonResponse(back_msg.__dict__)
     except Exception as e:
@@ -177,7 +177,7 @@ def start_frpc(id):
 def stop_frpc(pid):
     """
     :param pid: frp进程号
-    :return: 0 进程本来不存在/失败； 1 killed
+    :return: 0 进程本来不存在/失败； 1 成功 killed
     """
     try:
         if pid == 0:
@@ -185,10 +185,9 @@ def stop_frpc(pid):
         if os.name != 'posix':
             return 1
         command = ['bash', '/iecube/onlineBox/frp/stop_frp.sh', str(pid)]
-        process = subprocess.Popen(command, capture_output=True, text=True, check=True)
-        output, error = process.communicate()  # 获取标准输出和标准错误
-        exit_code = process.returncode  # 获取退出状态码
-        return exit_code
+        output = subprocess.run(command, capture_output=True, text=True, check=True)
+        res = int(output.stdout.strip())
+        return res
     except subprocess.CalledProcessError as e:
         logging.error("subprocess error: " + e.stdout)
         return 0

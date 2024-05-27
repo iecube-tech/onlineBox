@@ -13,8 +13,9 @@ pid=$1
 if ps -p $pid > /dev/null; then
     # 存在则杀死该进程 返回 1
     kill -9 $pid
-    exit 1
+    echo 1
 else
     # 不存在返回 0
-    exit 1
+    echo 0
 fi
+exit 0
