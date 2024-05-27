@@ -22,4 +22,7 @@ urlpatterns = [
     #    path("admin/", admin.site.urls),
     path('', views.curl),
     path('device/add/', views.add_device),
+    path('device/del/', views.add_device),
+    path('device/start/', views.add_device),
+    path('device/stop/', views.add_device),
 ]

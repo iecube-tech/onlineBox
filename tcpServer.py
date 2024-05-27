@@ -7,6 +7,8 @@ import requests
 TYPE_URL = {
     'add': '/device/add/',
     'del': '/device/del/',
+    'start': '/device/start/',
+    'stop': '/device/stop/',
 }
 
 

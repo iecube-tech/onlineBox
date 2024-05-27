@@ -7,3 +7,5 @@ if [ -z "$1" ]; then
 fi
 
 id=$1
+
+# 更改 stop_frp.sh start.frp.sh 权限 777
