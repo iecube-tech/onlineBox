@@ -13,6 +13,7 @@ import os
 # Create your views here.
 
 TEMPLATE_STR = settings.TEMPLATE_STR
+current_directory = os.path.dirname(os.path.abspath(__file__))
 
 
 class BackMsg:
@@ -117,8 +118,17 @@ def start_device(request):
             if new_pid > 0:
                 back_msg.res = 1
                 back_msg.deviceId = deviceId
-                back_msg.deviceState = 1
                 back_msg.pid = new_pid
+
+            # 查询该ip port的连通状态判断是否在线
+            ping_process = subprocess.Popen(['ping', '-c', '1', '-W', '1', str(localIp)], stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE)
+            ping_output, ping_error = ping_process.communicate()
+            ping_output = ping_output.decode('utf-8')
+            if "1 received" in ping_output:
+                back_msg.deviceState = 1
+            else:
+                back_msg.deviceState = 0
 
         return JsonResponse(back_msg.__dict__)
     except Exception as e:
@@ -168,22 +178,14 @@ def device_status(request):
         pid = post_data['pid']
         localIp = post_data['localIp']
         # 查询该id的frp进程是否正常 判断远程开启状态
-        grep_command = f"ps -ef | grep ini/{deviceId}.ini"
-        grep_process = subprocess.Popen(grep_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        grep_output, grep_error = grep_process.communicate()
-        if grep_output:
-            lines = grep_output.strip().split('\n')
-            for line in lines:
-                # 提取进程号（第二列）
-                parts = line.split()
-                if len(parts) >= 2:
-                    back_msg.pid = int(parts[1])
-        else:
-            # 如果输出为空，表示未找到匹配的进程
-            back_msg.pid = 0
+        grepStr = f'ini/{deviceId}.ini'
+        command = ['bash', f'{current_directory}/../util/findpid.sh', grepStr]
+        output = subprocess.run(command, capture_output=True, text=True, check=True)
+        res = int(output.stdout.strip())
+        back_msg.pid = res
 
         # 查询该ip port的连通状态判断是否在线
-        ping_process = subprocess.Popen(['ping', '-c', '1', '-W', '1', localIp], stdout=subprocess.PIPE,
+        ping_process = subprocess.Popen(['ping', '-c', '1', '-W', '1', str(localIp)], stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
         ping_output, ping_error = ping_process.communicate()
         ping_output = ping_output.decode('utf-8')
@@ -211,7 +213,7 @@ def start_frpc(id):
         if os.name != 'posix':
             return 1
         # 执行Shell脚本并捕获输出
-        command = ['bash', '/iecube/onlineBox/frp/start_frp.sh', str(id)]
+        command = ['bash', f'{current_directory}/../frp/start_frp.sh', str(id)]
         output = subprocess.run(command, capture_output=True, text=True, check=True)
         # 返回Shell脚本的输出（pid）
         pid = int(output.stdout.strip())
@@ -231,7 +233,7 @@ def stop_frpc(pid):
             return 1
         if os.name != 'posix':
             return 1
-        command = ['bash', '/iecube/onlineBox/frp/stop_frp.sh', str(pid)]
+        command = ['bash', f'{current_directory}/../frp/stop_frp.sh', str(pid)]
         output = subprocess.run(command, capture_output=True, text=True, check=True)
         res = int(output.stdout.strip())
         return res
