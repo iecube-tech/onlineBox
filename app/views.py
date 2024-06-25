@@ -34,10 +34,10 @@ def curl(request):
 
 @require_POST
 def add_device(request):
-    print(type(request.body.decode('utf-8')))
+    # print(type(request.body.decode('utf-8')))
     post_data = json.loads(request.body.decode('utf-8'))
-    print(request.body.decode('utf-8'))
-    print(type(post_data))
+    # print(request.body.decode('utf-8'))
+    # print(type(post_data))
     back_msg = BackMsg()
     try:
         deviceId = post_data['id']
@@ -50,7 +50,7 @@ def add_device(request):
         template = Template(TEMPLATE_STR)
         content = template.render(serverAdd=frpServerIp, serverPort=frpServerPort, id=deviceId, localIp=localIp,
                                   localPort=localPort, remotePort=remotePort)
-        print(content)
+        # print(content)
         with open(settings.DIR_OF_INI+str(deviceId)+".ini", "w") as file:
             file.write(content)
             file.close()
@@ -138,14 +138,61 @@ def stop_device(request):
         pid = post_data['pid']
         if os.name == 'posix':
             res = stop_frpc(pid=pid)
-            if res == 1:
-                back_msg.res = 1
-                back_msg.deviceId = deviceId
-                back_msg.deviceState = 0
-                back_msg.pid = 0
-            else:
+            back_msg.res = 1
+            back_msg.deviceId = deviceId
+            back_msg.deviceState = 0
+            back_msg.pid = 0
+            if res != 1:
                 back_msg.strData = 'onlineBox未找到该设备进程'
 
+        return JsonResponse(back_msg.__dict__)
+    except Exception as e:
+        logging.error(e)
+        back_msg.strData = str(e)
+        return JsonResponse(back_msg.__dict__)
+    finally:
+        return JsonResponse(back_msg.__dict__)
+
+
+@require_POST
+def device_status(request):
+    """
+    查询device的状态 远程状态， 在线状态
+    :param request: 固定的请求格式
+    :return: 固定的响应消息格式
+    """
+    post_data = json.loads(request.body.decode('utf-8'))
+    back_msg = BackMsg()
+    try:
+        deviceId = post_data['id']
+        pid = post_data['pid']
+        localIp = post_data['localIp']
+        # 查询该id的frp进程是否正常 判断远程开启状态
+        grep_command = f"ps -ef | grep ini/{deviceId}.ini"
+        grep_process = subprocess.Popen(grep_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        grep_output, grep_error = grep_process.communicate()
+        if grep_output:
+            lines = grep_output.strip().split('\n')
+            for line in lines:
+                # 提取进程号（第二列）
+                parts = line.split()
+                if len(parts) >= 2:
+                    back_msg.pid = int(parts[1])
+        else:
+            # 如果输出为空，表示未找到匹配的进程
+            back_msg.pid = 0
+
+        # 查询该ip port的连通状态判断是否在线
+        ping_process = subprocess.Popen(['ping', '-c', '1', '-W', '1', localIp], stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
+        ping_output, ping_error = ping_process.communicate()
+        ping_output = ping_output.decode('utf-8')
+        if "1 received" in ping_output:
+            back_msg.deviceState = 1
+        else:
+            back_msg.deviceState = 0
+
+        back_msg.res = 1
         return JsonResponse(back_msg.__dict__)
     except Exception as e:
         logging.error(e)

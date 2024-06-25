@@ -9,6 +9,7 @@ TYPE_URL = {
     'del': '/device/del/',
     'start': '/device/start/',
     'stop': '/device/stop/',
+    'status': '/device/status/'
 }
 
 

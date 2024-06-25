@@ -25,4 +25,5 @@ urlpatterns = [
     path('device/del/', views.del_device),
     path('device/start/', views.start_device),
     path('device/stop/', views.stop_device),
+    path('devic/status/', views.device_status),
 ]

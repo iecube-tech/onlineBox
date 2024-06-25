@@ -10,7 +10,7 @@ fi
 number="$1"
 
 # 执行命令
-nohup /iecube/onlineBox/frp/frpc -c "/iecube/onlineBox/ini/${number}.ini" >> "/iecube/onlineBox/log/${number}.log" 2>&1 &
+nohup /iecube/onlineBox/frp/frpc -c "/iecube/onlineBox/ini/${number}.ini" > "/iecube/onlineBox/log/${number}.log" 2>&1 &
 
 # 获取进程 ID
 pid=$!
