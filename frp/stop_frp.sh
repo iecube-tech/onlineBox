@@ -10,9 +10,9 @@ fi
 pid=$1
 
 # 检查是否存在该 PID 的进程
-if ps -p $pid > /dev/null; then
+if ps -p "$pid" > /dev/null; then
     # 存在则杀死该进程 返回 1
-    kill -9 $pid
+    kill -9 "$pid"
     echo 1
 else
     # 不存在返回 0
