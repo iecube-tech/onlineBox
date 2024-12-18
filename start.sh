@@ -5,17 +5,20 @@ id=$1
 current_dir=$(dirname "$(realpath "$0")")
 ARCH=$(uname -m)
 TARGET_HOST="vnc.iecube.com.cn"
-chmod 777 "$current_dir/frp/"
+chmod +x "${current_dir}/frp/start_frp.sh"
+chmod +x "${current_dir}/frp/stop_frp.sh"
+chmod +x "${current_dir}/frp/aarch64/frpc"
+chmod +x "${current_dir}/frp/x86/frpc"
+rm -rf log/onlineBox.log
 
 # 定义日志记录函数
 log_message() {
     local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
     # 获取传入的消息内容
-    local message="\$1"
     if [ ! -d "log" ]; then
         mkdir log
     fi
-    echo "[$timestamp] $message" >> log/onlineBox.log
+    echo "[$timestamp] $1" >> log/onlineBox.log
 }
 
 # 检查参数是否为空
