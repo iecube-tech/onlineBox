@@ -83,7 +83,7 @@ else
 fi
 
 # 开启服务
-nohup python3 "$current_dir"/manage.py runserver 127.0.0.1:9000 > /dev/null 2>&1 &
+nohup python3 "$current_dir"/manage.py runserver 127.0.0.1:9000 > "${current_dir}"/log/django.log 2>&1 &
 if ps -p $! > /dev/null; then
     # 进程存在，返回 PID
     log_message "boxServer $!"
@@ -93,7 +93,7 @@ else
 fi
 
 # 开启tcp代理
-nohup python3 "$current_dir"/tcpServer.py > /dev/null 2>&1 &
+nohup python3 "$current_dir"/tcpServer.py > "${current_dir}"/log/tcpServer.log 2>&1 &
 if ps -p $! > /dev/null; then
     # 进程存在，返回 PID
     log_message "boxServerProxy $!"
